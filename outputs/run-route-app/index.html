@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RunRoute Voice Navigator</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="map-stage" aria-label="Route map">
+        <div id="map"></div>
+        <div class="map-search">
+          <i data-lucide="search" aria-hidden="true"></i>
+          <input id="searchInput" type="search" placeholder="Search a place or address" autocomplete="off" />
+          <button id="searchButton" class="icon-button" type="button" aria-label="Search">
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+        <div class="map-status" id="status">Click the map to add your first waypoint.</div>
+      </section>
+
+      <aside class="control-panel" aria-label="Route controls">
+        <header class="panel-header">
+          <div>
+            <p class="eyebrow">Run planner</p>
+            <h1>RunRoute</h1>
+          </div>
+          <button id="locateButton" class="icon-button" type="button" aria-label="Use current location" title="Use current location">
+            <i data-lucide="crosshair"></i>
+          </button>
+        </header>
+
+        <section class="metric-grid" aria-label="Route summary">
+          <div>
+            <span>Distance</span>
+            <strong id="distanceMetric">0.00 mi</strong>
+          </div>
+          <div>
+            <span>Waypoints</span>
+            <strong id="waypointMetric">0</strong>
+          </div>
+          <div>
+            <span>Next cue</span>
+            <strong id="nextCueMetric">None</strong>
+          </div>
+        </section>
+
+        <section class="toolbar" aria-label="Planning tools">
+          <button id="buildRouteButton" class="primary-button" type="button">
+            <i data-lucide="route"></i>
+            Build route
+          </button>
+          <button id="undoButton" class="icon-button" type="button" aria-label="Remove last waypoint" title="Remove last waypoint">
+            <i data-lucide="undo-2"></i>
+          </button>
+          <button id="clearButton" class="icon-button danger" type="button" aria-label="Clear route" title="Clear route">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </section>
+
+        <section class="voice-box">
+          <div class="section-title">
+            <h2>Voice navigation</h2>
+            <label class="switch">
+              <input id="voiceToggle" type="checkbox" checked />
+              <span></span>
+            </label>
+          </div>
+          <div class="toolbar">
+            <button id="startRunButton" class="primary-button green" type="button">
+              <i data-lucide="volume-2"></i>
+              Start run
+            </button>
+            <button id="simulateButton" class="ghost-button" type="button">
+              <i data-lucide="play"></i>
+              Simulate
+            </button>
+          </div>
+          <p id="spokenPreview" class="spoken-preview">Voice cues are ready after a route is built.</p>
+        </section>
+
+        <section id="startLocationPanel" class="start-location-card">
+          <div>
+            <h2>Start point</h2>
+            <p>Use your current location as waypoint 1.</p>
+          </div>
+          <button id="addCurrentStartButton" class="ghost-button" type="button">
+            <i data-lucide="map-pin-plus"></i>
+            Add current location
+          </button>
+        </section>
+
+        <section class="auto-route-card">
+          <div>
+            <h2>Auto route</h2>
+            <p>Create a loop from your current location.</p>
+          </div>
+          <div class="auto-route-controls">
+            <label for="autoRouteDistance">Distance</label>
+            <select id="autoRouteDistance">
+              <option value="1609.344">1 mi</option>
+              <option value="3218.688">2 mi</option>
+              <option value="4988.9664">5k</option>
+              <option value="6437.376">4 mi</option>
+              <option value="9977.9328">10k</option>
+            </select>
+            <button id="autoBuildRouteButton" class="primary-button" type="button">
+              <i data-lucide="sparkles"></i>
+              Build auto route
+            </button>
+          </div>
+        </section>
+
+        <section class="waypoint-section">
+          <div class="section-title">
+            <h2>Waypoints</h2>
+            <button id="reverseButton" class="text-button" type="button">
+              <i data-lucide="repeat-2"></i>
+              Reverse
+            </button>
+          </div>
+          <ol id="waypointList" class="waypoint-list" aria-live="polite"></ol>
+        </section>
+
+        <details class="settings">
+          <summary>
+            <i data-lucide="settings-2"></i>
+            Routing settings
+          </summary>
+          <label>
+            Route API
+            <input id="routerInput" type="url" value="https://router.project-osrm.org/route/v1/foot" />
+          </label>
+          <label>
+            Cue distance
+            <input id="cueDistanceInput" type="range" min="20" max="120" value="55" />
+            <span id="cueDistanceLabel">55 m</span>
+          </label>
+        </details>
+      </aside>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
