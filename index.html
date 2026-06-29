@@ -27,6 +27,22 @@
           </button>
         </div>
         <div class="map-status" id="status">Click the map to add your first waypoint.</div>
+        <div id="mobileRouteAction" class="mobile-route-action">
+          <button id="mobileBuildRouteButton" class="primary-button" type="button">
+            <i data-lucide="route"></i>
+            Build route
+          </button>
+          <div id="mobileRunSummary" class="mobile-run-summary" hidden>
+            <button id="mobileStartRunButton" class="primary-button green" type="button">
+              <i data-lucide="volume-2"></i>
+              Start run
+            </button>
+            <div class="mobile-distance-pill" aria-label="Route distance">
+              <span>Distance</span>
+              <strong id="mobileDistanceMetric">0.00 mi</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <aside class="control-panel" aria-label="Route controls">

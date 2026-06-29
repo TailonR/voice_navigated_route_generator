@@ -98,7 +98,8 @@ button {
 }
 
 .mobile-controls-button,
-.mobile-panel-close {
+.mobile-panel-close,
+.mobile-route-action {
   display: none;
 }
 
@@ -460,6 +461,70 @@ button:not(:disabled):active {
     display: inline-flex;
   }
 
+  .mobile-route-action {
+    bottom: 18px;
+    display: block;
+    left: 50%;
+    max-width: calc(100% - 36px);
+    position: absolute;
+    transform: translateX(-50%);
+    width: 340px;
+    z-index: 660;
+  }
+
+  .mobile-route-action .primary-button {
+    min-height: 48px;
+    width: 100%;
+  }
+
+  .map-status {
+    bottom: 82px;
+  }
+
+  .mobile-run-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 118px;
+    width: 100%;
+  }
+
+  .mobile-run-summary[hidden] {
+    display: none;
+  }
+
+  .mobile-run-summary .primary-button {
+    border-radius: 8px 0 0 8px;
+  }
+
+  .mobile-distance-pill {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+    display: grid;
+    min-height: 48px;
+    padding: 5px 10px;
+  }
+
+  .mobile-distance-pill span,
+  .mobile-distance-pill strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-distance-pill span {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+  }
+
+  .mobile-distance-pill strong {
+    color: var(--ink);
+    font-size: 0.96rem;
+  }
+
   .map-search {
     right: 72px;
   }
@@ -490,6 +555,12 @@ button:not(:disabled):active {
     display: none;
   }
 
+  body.controls-open .mobile-route-action {
+    bottom: auto;
+    top: 80px;
+    z-index: 950;
+  }
+
   body.controls-open .map-status {
     display: none;
   }
@@ -497,6 +568,10 @@ button:not(:disabled):active {
   .control-panel {
     border-left: 0;
     border-top: 1px solid var(--line);
+  }
+
+  .control-panel > .toolbar > .primary-button {
+    display: none;
   }
 
   .metric-grid {

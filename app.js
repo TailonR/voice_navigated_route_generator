@@ -65,6 +65,11 @@ const els = {
   waypointList: document.querySelector("#waypointList"),
   mobileControlsButton: document.querySelector("#mobileControlsButton"),
   mobileCloseControlsButton: document.querySelector("#mobileCloseControlsButton"),
+  mobileRouteAction: document.querySelector("#mobileRouteAction"),
+  mobileBuildRouteButton: document.querySelector("#mobileBuildRouteButton"),
+  mobileRunSummary: document.querySelector("#mobileRunSummary"),
+  mobileStartRunButton: document.querySelector("#mobileStartRunButton"),
+  mobileDistanceMetric: document.querySelector("#mobileDistanceMetric"),
   distanceMetric: document.querySelector("#distanceMetric"),
   waypointMetric: document.querySelector("#waypointMetric"),
   nextCueMetric: document.querySelector("#nextCueMetric"),
@@ -385,16 +390,22 @@ function removeWaypoint(id) {
 
 function updateMetrics(distance = totalDistance(state.routePoints)) {
   els.distanceMetric.textContent = formatMiles(distance || 0);
+  els.mobileDistanceMetric.textContent = formatMiles(distance || 0);
   els.waypointMetric.textContent = state.waypoints.length;
   const next = state.steps.find((step, index) => index >= state.activeStepIndex && !state.spokenSteps.has(index));
   els.nextCueMetric.textContent = next ? next.short : "None";
   els.buildRouteButton.disabled = state.waypoints.length < 2;
+  els.mobileBuildRouteButton.disabled = state.waypoints.length < 2;
   els.startRunButton.disabled = state.steps.length === 0;
+  els.mobileStartRunButton.disabled = state.steps.length === 0;
   els.simulateButton.disabled = state.steps.length === 0;
   els.undoButton.disabled = state.waypoints.length === 0;
   els.clearButton.disabled = state.waypoints.length === 0;
   els.reverseButton.disabled = state.waypoints.length < 2;
   els.startLocationPanel.hidden = state.waypoints.length > 0;
+  const hasBuiltRoute = state.steps.length > 0;
+  els.mobileBuildRouteButton.hidden = hasBuiltRoute;
+  els.mobileRunSummary.hidden = !hasBuiltRoute;
 }
 
 function routeOriginFromMap() {
@@ -854,6 +865,7 @@ waypointLayer.on("popupopen", (event) => {
 els.mobileControlsButton.addEventListener("click", openRouteControls);
 els.mobileCloseControlsButton.addEventListener("click", closeRouteControls);
 els.buildRouteButton.addEventListener("click", handleBuildRouteClick);
+els.mobileBuildRouteButton.addEventListener("click", handleBuildRouteClick);
 els.undoButton.addEventListener("click", () => removeWaypoint(state.waypoints.at(-1)?.id));
 els.clearButton.addEventListener("click", () => {
   state.waypoints = [];
@@ -867,6 +879,7 @@ els.locateButton.addEventListener("click", locateUser);
 els.addCurrentStartButton.addEventListener("click", addCurrentLocationAsFirstWaypoint);
 els.autoBuildRouteButton.addEventListener("click", buildAutomaticRoute);
 els.startRunButton.addEventListener("click", startRun);
+els.mobileStartRunButton.addEventListener("click", startRun);
 els.simulateButton.addEventListener("click", simulateRun);
 els.reverseButton.addEventListener("click", () => {
   state.waypoints.reverse();
