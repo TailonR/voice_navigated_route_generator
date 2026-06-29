@@ -63,6 +63,8 @@ const state = {
 const els = {
   status: document.querySelector("#status"),
   waypointList: document.querySelector("#waypointList"),
+  mobileControlsButton: document.querySelector("#mobileControlsButton"),
+  mobileCloseControlsButton: document.querySelector("#mobileCloseControlsButton"),
   distanceMetric: document.querySelector("#distanceMetric"),
   waypointMetric: document.querySelector("#waypointMetric"),
   nextCueMetric: document.querySelector("#nextCueMetric"),
@@ -296,6 +298,19 @@ function getCurrentPosition(options = {}) {
     }
     navigator.geolocation.getCurrentPosition(resolve, reject, options);
   });
+}
+
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function openRouteControls() {
+  document.body.classList.add("controls-open");
+}
+
+function closeRouteControls() {
+  document.body.classList.remove("controls-open");
+  setTimeout(() => map.invalidateSize(), 0);
 }
 
 function resetRoute() {
@@ -538,9 +553,15 @@ async function buildAutomaticRoute() {
     const targetNote = builtDistance >= targetMeters ? "at least your target" : "under your target";
     setStatus(`Auto route built for ${selectedLabel}: ${distanceText}, ${targetNote}. Adjust waypoints if you want to fine tune it.`);
     speak(`Auto route ready. ${distanceText} planned.`, true);
+    if (isMobileLayout()) closeRouteControls();
   } finally {
     els.autoBuildRouteButton.disabled = false;
   }
+}
+
+async function handleBuildRouteClick() {
+  const route = await buildRoute();
+  if (route && isMobileLayout()) closeRouteControls();
 }
 
 async function buildRoute({ announce = true } = {}) {
@@ -830,7 +851,9 @@ waypointLayer.on("popupopen", (event) => {
   if (button) button.addEventListener("click", () => removeWaypoint(button.dataset.id));
 });
 
-els.buildRouteButton.addEventListener("click", buildRoute);
+els.mobileControlsButton.addEventListener("click", openRouteControls);
+els.mobileCloseControlsButton.addEventListener("click", closeRouteControls);
+els.buildRouteButton.addEventListener("click", handleBuildRouteClick);
 els.undoButton.addEventListener("click", () => removeWaypoint(state.waypoints.at(-1)?.id));
 els.clearButton.addEventListener("click", () => {
   state.waypoints = [];
