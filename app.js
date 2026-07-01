@@ -56,7 +56,6 @@ const state = {
   activeStepIndex: 0,
   spokenSteps: new Set(),
   watchId: null,
-  simTimer: null,
   userMarker: null,
   isBuildingRoute: false,
 };
@@ -73,8 +72,6 @@ const els = {
   mobileStartRunButton: document.querySelector("#mobileStartRunButton"),
   mobileDistanceMetric: document.querySelector("#mobileDistanceMetric"),
   distanceMetric: document.querySelector("#distanceMetric"),
-  waypointMetric: document.querySelector("#waypointMetric"),
-  nextCueMetric: document.querySelector("#nextCueMetric"),
   searchInput: document.querySelector("#searchInput"),
   searchButton: document.querySelector("#searchButton"),
   buildRouteButton: document.querySelector("#buildRouteButton"),
@@ -82,7 +79,6 @@ const els = {
   clearButton: document.querySelector("#clearButton"),
   locateButton: document.querySelector("#locateButton"),
   startRunButton: document.querySelector("#startRunButton"),
-  simulateButton: document.querySelector("#simulateButton"),
   startLocationPanel: document.querySelector("#startLocationPanel"),
   addCurrentStartButton: document.querySelector("#addCurrentStartButton"),
   autoRouteDistance: document.querySelector("#autoRouteDistance"),
@@ -393,14 +389,10 @@ function removeWaypoint(id) {
 function updateMetrics(distance = totalDistance(state.routePoints)) {
   els.distanceMetric.textContent = formatMiles(distance || 0);
   els.mobileDistanceMetric.textContent = formatMiles(distance || 0);
-  els.waypointMetric.textContent = state.waypoints.length;
-  const next = state.steps.find((step, index) => index >= state.activeStepIndex && !state.spokenSteps.has(index));
-  els.nextCueMetric.textContent = next ? next.short : "None";
   els.buildRouteButton.disabled = state.waypoints.length < 2;
   els.mobileBuildRouteButton.disabled = state.waypoints.length < 2;
   els.startRunButton.disabled = state.steps.length === 0;
   els.mobileStartRunButton.disabled = state.steps.length === 0;
-  els.simulateButton.disabled = state.steps.length === 0;
   els.undoButton.disabled = state.waypoints.length === 0;
   els.clearButton.disabled = state.waypoints.length === 0;
   els.mobileClearRouteButton.hidden = state.waypoints.length === 0;
@@ -623,7 +615,6 @@ async function buildRoute({ announce = true } = {}) {
 function clearRoute() {
   state.waypoints = [];
   if (state.watchId !== null) navigator.geolocation.clearWatch(state.watchId);
-  if (state.simTimer) clearInterval(state.simTimer);
   resetRoute();
   renderWaypoints();
   setStatus("Route cleared.");
@@ -808,38 +799,6 @@ function addCurrentLocationAsFirstWaypoint() {
   );
 }
 
-function simulateRun() {
-  if (!state.steps.length) return;
-  if (state.simTimer) {
-    clearInterval(state.simTimer);
-    state.simTimer = null;
-    els.simulateButton.innerHTML = '<i data-lucide="play"></i> Simulate';
-    if (window.lucide) window.lucide.createIcons();
-    setStatus("Simulation stopped.");
-    return;
-  }
-
-  state.spokenSteps.clear();
-  state.activeStepIndex = 0;
-  let index = 0;
-  speak("Simulation started.", true);
-  els.simulateButton.innerHTML = '<i data-lucide="pause"></i> Stop';
-  if (window.lucide) window.lucide.createIcons();
-  state.simTimer = setInterval(() => {
-    const step = state.steps[index];
-    if (!step) {
-      clearInterval(state.simTimer);
-      state.simTimer = null;
-      els.simulateButton.innerHTML = '<i data-lucide="play"></i> Simulate';
-      if (window.lucide) window.lucide.createIcons();
-      speak("Simulation complete. Nice route.", true);
-      return;
-    }
-    handlePosition(step.lat, step.lng);
-    index += 1;
-  }, 2600);
-}
-
 async function searchPlace() {
   const query = els.searchInput.value.trim();
   if (!query) return;
@@ -893,7 +852,6 @@ els.addCurrentStartButton.addEventListener("click", addCurrentLocationAsFirstWay
 els.autoBuildRouteButton.addEventListener("click", buildAutomaticRoute);
 els.startRunButton.addEventListener("click", startRun);
 els.mobileStartRunButton.addEventListener("click", startRun);
-els.simulateButton.addEventListener("click", simulateRun);
 els.reverseButton.addEventListener("click", () => {
   state.waypoints.reverse();
   resetRoute();
