@@ -10,12 +10,18 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=mobile-clear-route" />
   </head>
   <body>
     <main class="app-shell">
       <section class="map-stage" aria-label="Route map">
         <div id="map"></div>
+        <button id="mobileControlsButton" class="icon-button mobile-controls-button" type="button" aria-label="Open route controls" title="Open route controls">
+          <i data-lucide="menu"></i>
+        </button>
+        <button id="mobileClearRouteButton" class="icon-button danger mobile-clear-route-button" type="button" aria-label="Clear route" title="Clear route" hidden>
+          <i data-lucide="x"></i>
+        </button>
         <div class="map-search">
           <i data-lucide="search" aria-hidden="true"></i>
           <input id="searchInput" type="search" placeholder="Search a place or address" autocomplete="off" />
@@ -24,6 +30,22 @@
           </button>
         </div>
         <div class="map-status" id="status">Click the map to add your first waypoint.</div>
+        <div id="mobileRouteAction" class="mobile-route-action">
+          <button id="mobileBuildRouteButton" class="primary-button" type="button">
+            <i data-lucide="route"></i>
+            Build route
+          </button>
+          <div id="mobileRunSummary" class="mobile-run-summary" hidden>
+            <button id="mobileStartRunButton" class="primary-button green" type="button">
+              <i data-lucide="volume-2"></i>
+              Start run
+            </button>
+            <div class="mobile-distance-pill" aria-label="Route distance">
+              <span>Distance</span>
+              <strong id="mobileDistanceMetric">0.00 mi</strong>
+            </div>
+          </div>
+        </div>
       </section>
 
       <aside class="control-panel" aria-label="Route controls">
@@ -34,6 +56,9 @@
           </div>
           <button id="locateButton" class="icon-button" type="button" aria-label="Use current location" title="Use current location">
             <i data-lucide="crosshair"></i>
+          </button>
+          <button id="mobileCloseControlsButton" class="icon-button mobile-panel-close" type="button" aria-label="Close route controls" title="Close route controls">
+            <i data-lucide="x"></i>
           </button>
         </header>
 
@@ -151,6 +176,6 @@
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     ></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=mobile-clear-route"></script>
   </body>
 </html>
