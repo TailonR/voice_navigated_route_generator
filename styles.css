@@ -160,7 +160,7 @@ h2 {
 .metric-grid {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .metric-grid div {
@@ -258,6 +258,14 @@ button:not(:disabled):active {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 14px;
+}
+
+.voice-box .toolbar .primary-button {
+  width: 100%;
+}
+
+.voice-box .section-title + .toolbar {
+  margin-top: 12px;
 }
 
 .start-location-card,
@@ -438,6 +446,10 @@ button:not(:disabled):active {
 }
 
 @media (max-width: 860px) {
+  :root {
+    --mobile-map-button-size: 60px;
+  }
+
   .app-shell {
     display: block;
     min-height: 100vh;
@@ -456,18 +468,22 @@ button:not(:disabled):active {
   .mobile-controls-button {
     box-shadow: var(--shadow);
     display: inline-flex;
+    height: var(--mobile-map-button-size);
     position: absolute;
     right: 18px;
     top: 18px;
+    width: var(--mobile-map-button-size);
     z-index: 650;
   }
 
   .mobile-clear-route-button {
     box-shadow: var(--shadow);
     display: inline-flex;
+    height: var(--mobile-map-button-size);
     position: absolute;
     right: 18px;
-    top: 70px;
+    top: 88px;
+    width: var(--mobile-map-button-size);
     z-index: 650;
   }
 
@@ -544,7 +560,7 @@ button:not(:disabled):active {
   }
 
   .map-search {
-    right: 72px;
+    right: 90px;
   }
 
   .control-panel {
@@ -591,13 +607,6 @@ button:not(:disabled):active {
     display: none;
   }
 
-  .metric-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .metric-grid div:last-child {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 520px) {

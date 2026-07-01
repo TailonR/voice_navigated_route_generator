@@ -67,14 +67,6 @@
             <span>Distance</span>
             <strong id="distanceMetric">0.00 mi</strong>
           </div>
-          <div>
-            <span>Waypoints</span>
-            <strong id="waypointMetric">0</strong>
-          </div>
-          <div>
-            <span>Next cue</span>
-            <strong id="nextCueMetric">None</strong>
-          </div>
         </section>
 
         <section class="toolbar" aria-label="Planning tools">
@@ -86,7 +78,7 @@
             <i data-lucide="undo-2"></i>
           </button>
           <button id="clearButton" class="icon-button danger" type="button" aria-label="Clear route" title="Clear route">
-            <i data-lucide="trash-2"></i>
+            <i data-lucide="x"></i>
           </button>
         </section>
 
@@ -102,10 +94,6 @@
             <button id="startRunButton" class="primary-button green" type="button">
               <i data-lucide="volume-2"></i>
               Start run
-            </button>
-            <button id="simulateButton" class="ghost-button" type="button">
-              <i data-lucide="play"></i>
-              Simulate
             </button>
           </div>
           <p id="spokenPreview" class="spoken-preview">Voice cues are ready after a route is built.</p>
