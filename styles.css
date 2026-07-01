@@ -98,9 +98,14 @@ button {
 }
 
 .mobile-controls-button,
+.mobile-clear-route-button,
 .mobile-panel-close,
 .mobile-route-action {
   display: none;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .control-panel {
@@ -457,6 +462,19 @@ button:not(:disabled):active {
     z-index: 650;
   }
 
+  .mobile-clear-route-button {
+    box-shadow: var(--shadow);
+    display: inline-flex;
+    position: absolute;
+    right: 18px;
+    top: 70px;
+    z-index: 650;
+  }
+
+  .mobile-clear-route-button[hidden] {
+    display: none;
+  }
+
   .mobile-panel-close {
     display: inline-flex;
   }
@@ -555,10 +573,9 @@ button:not(:disabled):active {
     display: none;
   }
 
-  body.controls-open .mobile-route-action {
-    bottom: auto;
-    top: 80px;
-    z-index: 950;
+  body.controls-open .mobile-route-action,
+  body.controls-open .mobile-clear-route-button {
+    display: none;
   }
 
   body.controls-open .map-status {

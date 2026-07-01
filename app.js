@@ -58,12 +58,14 @@ const state = {
   watchId: null,
   simTimer: null,
   userMarker: null,
+  isBuildingRoute: false,
 };
 
 const els = {
   status: document.querySelector("#status"),
   waypointList: document.querySelector("#waypointList"),
   mobileControlsButton: document.querySelector("#mobileControlsButton"),
+  mobileClearRouteButton: document.querySelector("#mobileClearRouteButton"),
   mobileCloseControlsButton: document.querySelector("#mobileCloseControlsButton"),
   mobileRouteAction: document.querySelector("#mobileRouteAction"),
   mobileBuildRouteButton: document.querySelector("#mobileBuildRouteButton"),
@@ -401,10 +403,11 @@ function updateMetrics(distance = totalDistance(state.routePoints)) {
   els.simulateButton.disabled = state.steps.length === 0;
   els.undoButton.disabled = state.waypoints.length === 0;
   els.clearButton.disabled = state.waypoints.length === 0;
+  els.mobileClearRouteButton.hidden = state.waypoints.length === 0;
   els.reverseButton.disabled = state.waypoints.length < 2;
   els.startLocationPanel.hidden = state.waypoints.length > 0;
   const hasBuiltRoute = state.steps.length > 0;
-  els.mobileBuildRouteButton.hidden = hasBuiltRoute;
+  els.mobileBuildRouteButton.hidden = hasBuiltRoute || state.isBuildingRoute;
   els.mobileRunSummary.hidden = !hasBuiltRoute;
 }
 
@@ -571,8 +574,15 @@ async function buildAutomaticRoute() {
 }
 
 async function handleBuildRouteClick() {
-  const route = await buildRoute();
-  if (route && isMobileLayout()) closeRouteControls();
+  state.isBuildingRoute = true;
+  updateMetrics();
+  try {
+    const route = await buildRoute();
+    if (route && isMobileLayout()) closeRouteControls();
+  } finally {
+    state.isBuildingRoute = false;
+    updateMetrics();
+  }
 }
 
 async function buildRoute({ announce = true } = {}) {
@@ -608,6 +618,15 @@ async function buildRoute({ announce = true } = {}) {
     console.error(error);
     return fallback;
   }
+}
+
+function clearRoute() {
+  state.waypoints = [];
+  if (state.watchId !== null) navigator.geolocation.clearWatch(state.watchId);
+  if (state.simTimer) clearInterval(state.simTimer);
+  resetRoute();
+  renderWaypoints();
+  setStatus("Route cleared.");
 }
 
 async function fetchRoute() {
@@ -867,14 +886,8 @@ els.mobileCloseControlsButton.addEventListener("click", closeRouteControls);
 els.buildRouteButton.addEventListener("click", handleBuildRouteClick);
 els.mobileBuildRouteButton.addEventListener("click", handleBuildRouteClick);
 els.undoButton.addEventListener("click", () => removeWaypoint(state.waypoints.at(-1)?.id));
-els.clearButton.addEventListener("click", () => {
-  state.waypoints = [];
-  if (state.watchId !== null) navigator.geolocation.clearWatch(state.watchId);
-  if (state.simTimer) clearInterval(state.simTimer);
-  resetRoute();
-  renderWaypoints();
-  setStatus("Route cleared.");
-});
+els.clearButton.addEventListener("click", clearRoute);
+els.mobileClearRouteButton.addEventListener("click", clearRoute);
 els.locateButton.addEventListener("click", locateUser);
 els.addCurrentStartButton.addEventListener("click", addCurrentLocationAsFirstWaypoint);
 els.autoBuildRouteButton.addEventListener("click", buildAutomaticRoute);

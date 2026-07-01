@@ -10,7 +10,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=mobile-clear-route" />
   </head>
   <body>
     <main class="app-shell">
@@ -18,6 +18,9 @@
         <div id="map"></div>
         <button id="mobileControlsButton" class="icon-button mobile-controls-button" type="button" aria-label="Open route controls" title="Open route controls">
           <i data-lucide="menu"></i>
+        </button>
+        <button id="mobileClearRouteButton" class="icon-button danger mobile-clear-route-button" type="button" aria-label="Clear route" title="Clear route" hidden>
+          <i data-lucide="x"></i>
         </button>
         <div class="map-search">
           <i data-lucide="search" aria-hidden="true"></i>
@@ -173,6 +176,6 @@
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     ></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=mobile-clear-route"></script>
   </body>
 </html>
