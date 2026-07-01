@@ -252,7 +252,6 @@ button:not(:disabled):active {
 }
 
 .voice-box,
-.start-location-card,
 .auto-route-card,
 .settings {
   border: 1px solid var(--line);
@@ -268,7 +267,6 @@ button:not(:disabled):active {
   margin-top: 12px;
 }
 
-.start-location-card,
 .auto-route-card {
   align-items: center;
   display: grid;
@@ -276,16 +274,11 @@ button:not(:disabled):active {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.start-location-card p,
 .auto-route-card p {
   color: var(--muted);
   font-size: 0.9rem;
   line-height: 1.4;
   margin-top: 4px;
-}
-
-.start-location-card[hidden] {
-  display: none;
 }
 
 .auto-route-controls {
