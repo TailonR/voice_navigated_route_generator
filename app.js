@@ -79,8 +79,6 @@ const els = {
   clearButton: document.querySelector("#clearButton"),
   locateButton: document.querySelector("#locateButton"),
   startRunButton: document.querySelector("#startRunButton"),
-  startLocationPanel: document.querySelector("#startLocationPanel"),
-  addCurrentStartButton: document.querySelector("#addCurrentStartButton"),
   autoRouteDistance: document.querySelector("#autoRouteDistance"),
   autoBuildRouteButton: document.querySelector("#autoBuildRouteButton"),
   reverseButton: document.querySelector("#reverseButton"),
@@ -403,7 +401,6 @@ function updateMetrics(distance = totalDistance(state.routePoints)) {
   els.clearButton.disabled = state.waypoints.length === 0;
   els.mobileClearRouteButton.hidden = state.waypoints.length === 0;
   els.reverseButton.disabled = state.waypoints.length < 2;
-  els.startLocationPanel.hidden = state.waypoints.length > 0;
   const hasBuiltRoute = state.steps.length > 0;
   els.mobileBuildRouteButton.hidden = hasBuiltRoute || state.isBuildingRoute;
   els.mobileRunSummary.hidden = !hasBuiltRoute;
@@ -785,31 +782,6 @@ function centerMapOnCurrentLocation() {
   );
 }
 
-function addCurrentLocationAsFirstWaypoint() {
-  if (state.waypoints.length > 0) return;
-  if (!navigator.geolocation) {
-    setStatus("Geolocation is not available in this browser.");
-    return;
-  }
-
-  els.addCurrentStartButton.disabled = true;
-  setStatus("Adding your current location as waypoint 1...");
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
-      map.setView(latlng, USER_MAP_ZOOM);
-      setUserMarker(latlng);
-      addCurrentLocationAsWaypointOne(latlng);
-      els.addCurrentStartButton.disabled = false;
-    },
-    (error) => {
-      els.addCurrentStartButton.disabled = false;
-      setStatus(`Location error: ${error.message}`);
-    },
-    { enableHighAccuracy: true, maximumAge: 1000, timeout: 12000 },
-  );
-}
-
 async function searchPlace() {
   const query = els.searchInput.value.trim();
   if (!query) return;
@@ -860,7 +832,6 @@ els.undoButton.addEventListener("click", () => removeWaypoint(state.waypoints.at
 els.clearButton.addEventListener("click", clearRoute);
 els.mobileClearRouteButton.addEventListener("click", clearRoute);
 els.locateButton.addEventListener("click", locateUser);
-els.addCurrentStartButton.addEventListener("click", addCurrentLocationAsFirstWaypoint);
 els.autoBuildRouteButton.addEventListener("click", buildAutomaticRoute);
 els.startRunButton.addEventListener("click", startRun);
 els.mobileStartRunButton.addEventListener("click", startRun);
