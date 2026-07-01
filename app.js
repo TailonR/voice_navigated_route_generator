@@ -285,6 +285,12 @@ function addWaypoint(latlng, label = "Waypoint") {
   setStatus(`${label} added. Add another point or build the route.`);
 }
 
+function addCurrentLocationAsWaypointOne(latlng) {
+  if (state.waypoints.length > 0) return false;
+  addWaypoint(latlng, "Current location");
+  return true;
+}
+
 function setUserMarker(latlng) {
   if (!state.userMarker) {
     state.userMarker = L.marker(latlng, { icon: userIcon }).addTo(map);
@@ -765,7 +771,12 @@ function centerMapOnCurrentLocation() {
       const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
       map.setView(latlng, USER_MAP_ZOOM);
       setUserMarker(latlng);
-      setStatus("Centered on your location. Click the map to add your first waypoint.");
+      const addedWaypoint = addCurrentLocationAsWaypointOne(latlng);
+      setStatus(
+        addedWaypoint
+          ? "Current location added as waypoint 1. Add another point or build the route."
+          : "Centered on your location.",
+      );
     },
     () => {
       setStatus("Could not access your location. Click the map to add your first waypoint.");
@@ -788,7 +799,7 @@ function addCurrentLocationAsFirstWaypoint() {
       const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
       map.setView(latlng, USER_MAP_ZOOM);
       setUserMarker(latlng);
-      addWaypoint(latlng, "Current location");
+      addCurrentLocationAsWaypointOne(latlng);
       els.addCurrentStartButton.disabled = false;
     },
     (error) => {
@@ -826,7 +837,8 @@ function locateUser() {
       const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
       map.setView(latlng, 16);
       setUserMarker(latlng);
-      addWaypoint(latlng, "Current location");
+      const addedWaypoint = addCurrentLocationAsWaypointOne(latlng);
+      if (!addedWaypoint) setStatus("Centered on your location.");
     },
     (error) => setStatus(`Location error: ${error.message}`),
     { enableHighAccuracy: true, timeout: 12000 },
