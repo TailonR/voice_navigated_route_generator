@@ -46,6 +46,8 @@ const AUTO_ROUTE_PATTERNS = [
 ];
 const AUTO_ROUTE_BEARINGS = [0, 45, 90, 135];
 const METERS_PER_MILE = 1609.344;
+const SEARCH_RESULT_LIMIT = 10;
+const SEARCH_VIEWBOX_DELTA = 0.35;
 
 function initApp() {
 const state = {
@@ -58,6 +60,7 @@ const state = {
   watchId: null,
   userMarker: null,
   isBuildingRoute: false,
+  currentCity: "",
 };
 
 const els = {
@@ -295,6 +298,50 @@ function setUserMarker(latlng) {
   } else {
     state.userMarker.setLatLng(latlng);
   }
+}
+
+function cityFromAddress(address = {}) {
+  return (
+    address.city ||
+    address.town ||
+    address.village ||
+    address.municipality ||
+    address.hamlet ||
+    address.suburb ||
+    address.county ||
+    ""
+  );
+}
+
+async function loadCurrentCity(latlng) {
+  const params = new URLSearchParams({
+    format: "json",
+    lat: String(latlng.lat),
+    lon: String(latlng.lng),
+    zoom: "14",
+    addressdetails: "1",
+  });
+  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) throw new Error(`City lookup failed: ${response.status}`);
+  const payload = await response.json();
+  state.currentCity = cityFromAddress(payload.address);
+  return state.currentCity;
+}
+
+async function currentCityForSearch(searchOrigin) {
+  if (state.currentCity) return state.currentCity;
+  try {
+    return await loadCurrentCity(searchOrigin);
+  } catch {
+    return "";
+  }
+}
+
+function searchQueryWithCity(query, city) {
+  if (!city || query.toLowerCase().includes(city.toLowerCase())) return query;
+  return `${query}, ${city}`;
 }
 
 function getCurrentPosition(options = {}) {
@@ -768,6 +815,7 @@ function centerMapOnCurrentLocation() {
       const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
       map.setView(latlng, USER_MAP_ZOOM);
       setUserMarker(latlng);
+      loadCurrentCity(latlng).catch(() => {});
       const addedWaypoint = addCurrentLocationAsWaypointOne(latlng);
       setStatus(
         addedWaypoint
@@ -786,11 +834,35 @@ async function searchPlace() {
   const query = els.searchInput.value.trim();
   if (!query) return;
   setStatus("Searching...");
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+  const searchOrigin = routeOriginFromMap().latlng;
+  const currentCity = await currentCityForSearch(searchOrigin);
+  const localizedQuery = searchQueryWithCity(query, currentCity);
+  const lngDelta = SEARCH_VIEWBOX_DELTA / Math.max(Math.cos((searchOrigin.lat * Math.PI) / 180), 0.2);
+  const params = new URLSearchParams({
+    format: "json",
+    q: localizedQuery,
+    limit: String(SEARCH_RESULT_LIMIT),
+    viewbox: [
+      searchOrigin.lng - lngDelta,
+      searchOrigin.lat + SEARCH_VIEWBOX_DELTA,
+      searchOrigin.lng + lngDelta,
+      searchOrigin.lat - SEARCH_VIEWBOX_DELTA,
+    ].join(","),
+  });
+  const url = `https://nominatim.openstreetmap.org/search?${params}`;
   const response = await fetch(url, { headers: { Accept: "application/json" } });
-  const [place] = await response.json();
+  const places = await response.json();
+  const place = places
+    .map((candidate) => ({
+      ...candidate,
+      distanceFromOrigin: distanceMeters(searchOrigin, {
+        lat: Number(candidate.lat),
+        lng: Number(candidate.lon),
+      }),
+    }))
+    .sort((a, b) => a.distanceFromOrigin - b.distanceFromOrigin)[0];
   if (!place) {
-    setStatus("No matching place found.");
+    setStatus(currentCity ? `No matching place found in ${currentCity}.` : "No matching place found.");
     return;
   }
   const latlng = { lat: Number(place.lat), lng: Number(place.lon) };
@@ -809,6 +881,7 @@ function locateUser() {
       const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
       map.setView(latlng, 16);
       setUserMarker(latlng);
+      loadCurrentCity(latlng).catch(() => {});
       const addedWaypoint = addCurrentLocationAsWaypointOne(latlng);
       if (!addedWaypoint) setStatus("Centered on your location.");
     },
