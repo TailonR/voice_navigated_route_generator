@@ -286,6 +286,22 @@ function addWaypoint(latlng, label = "Waypoint") {
   setStatus(`${label} added. Add another point or build the route.`);
 }
 
+function appendManualLoopEndpoint(latlng) {
+  const lastWaypoint = state.waypoints.at(-1);
+  if (lastWaypoint?.label === "Current location" && state.waypoints.length > 1) {
+    lastWaypoint.lat = latlng.lat;
+    lastWaypoint.lng = latlng.lng;
+    return;
+  }
+
+  state.waypoints.push({
+    id: crypto.randomUUID(),
+    lat: latlng.lat,
+    lng: latlng.lng,
+    label: "Current location",
+  });
+}
+
 function addCurrentLocationAsWaypointOne(latlng) {
   if (state.waypoints.length > 0) return false;
   addWaypoint(latlng, "Current location");
@@ -633,6 +649,23 @@ async function buildRoute({ announce = true } = {}) {
     return null;
   }
   setStatus("Building route...");
+
+  try {
+    const position = await getCurrentPosition({
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 12000,
+    });
+    const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
+    setUserMarker(latlng);
+    loadCurrentCity(latlng).catch(() => {});
+    appendManualLoopEndpoint(latlng);
+    renderWaypoints();
+  } catch (error) {
+    setStatus(`Could not add current location to close the loop: ${error.message}`);
+    return null;
+  }
+
   resetRoute();
 
   try {
