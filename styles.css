@@ -43,6 +43,7 @@ button {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 390px;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .map-stage {
@@ -50,12 +51,14 @@ button {
   overflow: hidden;
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
 }
 
 #map {
   height: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   background: #dfe7e0;
 }
@@ -115,6 +118,7 @@ button {
   flex-direction: column;
   gap: 18px;
   max-height: 100vh;
+  max-height: 100dvh;
   overflow: auto;
   padding: 24px;
   position: relative;
@@ -446,16 +450,19 @@ button:not(:disabled):active {
   .app-shell {
     display: block;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .map-stage {
     height: 100vh;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   #map {
     height: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .mobile-controls-button {
