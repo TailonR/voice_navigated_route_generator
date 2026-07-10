@@ -54,6 +54,7 @@ const state = {
   waypoints: [],
   routeLayer: null,
   routePoints: [],
+  routeCumulativeDistances: [],
   steps: [],
   activeStepIndex: 0,
   spokenSteps: new Set(),
@@ -241,6 +242,39 @@ function closestPointOnRoute(point, routePoints) {
   return closest;
 }
 
+function cumulativeRouteDistances(points) {
+  const distances = [0];
+  for (let index = 1; index < points.length; index += 1) {
+    distances[index] = distances[index - 1] + distanceMeters(points[index - 1], points[index]);
+  }
+  return distances;
+}
+
+function routeProgressForPoint(point, routePoints, cumulativeDistances = cumulativeRouteDistances(routePoints)) {
+  if (routePoints.length < 2) return 0;
+
+  let closestDistanceSquared = Infinity;
+  let closestProgress = 0;
+
+  for (let index = 0; index < routePoints.length - 1; index += 1) {
+    const origin = routePoints[index];
+    const localPoint = localMeters(point, origin);
+    const localStart = { x: 0, y: 0 };
+    const localEnd = localMeters(routePoints[index + 1], origin);
+    const candidate = closestPointOnSegment(localPoint, localStart, localEnd);
+    const distanceSquared = (localPoint.x - candidate.x) ** 2 + (localPoint.y - candidate.y) ** 2;
+
+    if (distanceSquared < closestDistanceSquared) {
+      const segmentLength = distanceMeters(routePoints[index], routePoints[index + 1]);
+      const candidateProgressRatio = segmentLength === 0 ? 0 : distanceMeters(origin, latLngFromLocalMeters(candidate, origin)) / segmentLength;
+      closestDistanceSquared = distanceSquared;
+      closestProgress = cumulativeDistances[index] + segmentLength * Math.max(0, Math.min(1, candidateProgressRatio));
+    }
+  }
+
+  return closestProgress;
+}
+
 function snapWaypointsToRoute(routePoints) {
   if (routePoints.length < 2) return;
   state.waypoints = state.waypoints.map((waypoint) => {
@@ -386,6 +420,7 @@ function closeRouteControls() {
 function resetRoute() {
   state.steps = [];
   state.routePoints = [];
+  state.routeCumulativeDistances = [];
   state.activeStepIndex = 0;
   state.spokenSteps.clear();
   cueLayer.clearLayers();
@@ -718,13 +753,16 @@ async function fetchRouteForWaypoints(waypoints) {
   if (!route) throw new Error("No route returned.");
 
   const points = route.geometry.coordinates.map(([lng, lat]) => ({ lat, lng }));
+  const cumulativeDistances = cumulativeRouteDistances(points);
   const steps = route.legs.flatMap((leg) =>
     leg.steps.map((step) => {
       const [lng, lat] = step.maneuver.location;
+      const point = { lat, lng };
       return {
         lat,
         lng,
         distance: step.distance,
+        progress: routeProgressForPoint(point, points, cumulativeDistances),
         text: instructionFromStep(step),
         short: shortInstruction(step),
       };
@@ -735,10 +773,12 @@ async function fetchRouteForWaypoints(waypoints) {
 
 function buildFallbackRoute() {
   const points = state.waypoints.map((wp) => ({ lat: wp.lat, lng: wp.lng }));
+  const cumulativeDistances = cumulativeRouteDistances(points);
   const steps = state.waypoints.slice(1).map((wp, index) => ({
     lat: wp.lat,
     lng: wp.lng,
     distance: distanceMeters(points[index], points[index + 1]),
+    progress: cumulativeDistances[index + 1],
     text: `Continue to waypoint ${index + 2}.`,
     short: `Waypoint ${index + 2}`,
   }));
@@ -769,6 +809,7 @@ function capitalize(value) {
 
 function drawRoute(points, distance, dashed = false) {
   state.routePoints = points;
+  state.routeCumulativeDistances = cumulativeRouteDistances(points);
   state.routeLayer = L.polyline(points, {
     color: dashed ? "#b17b10" : "#2266d8",
     dashArray: dashed ? "8 9" : null,
@@ -822,17 +863,23 @@ function handlePosition(lat, lng) {
   setUserMarker(current);
 
   const cueDistance = Number(els.cueDistanceInput.value);
+  const currentProgress = routeProgressForPoint(current, state.routePoints, state.routeCumulativeDistances);
   for (let index = state.activeStepIndex; index < state.steps.length; index += 1) {
     if (state.spokenSteps.has(index)) continue;
     const step = state.steps[index];
-    const distance = distanceMeters(current, step);
-    if (distance <= cueDistance) {
+    const distanceToCue = step.progress - currentProgress;
+    if (distanceToCue < -cueDistance) {
       state.spokenSteps.add(index);
       state.activeStepIndex = index + 1;
-      speak(`${step.text} In ${Math.round(distance)} meters.`);
-      updateMetrics();
-      break;
+      continue;
     }
+    if (distanceToCue <= cueDistance) {
+      state.spokenSteps.add(index);
+      state.activeStepIndex = index + 1;
+      speak(`${step.text} In ${Math.round(Math.max(0, distanceToCue))} meters.`);
+      updateMetrics();
+    }
+    break;
   }
 }
 
