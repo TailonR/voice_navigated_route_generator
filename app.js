@@ -66,6 +66,8 @@ const state = {
 
 const els = {
   status: document.querySelector("#status"),
+  routeLoadingOverlay: document.querySelector("#routeLoadingOverlay"),
+  routeLoadingMessage: document.querySelector("#routeLoadingMessage"),
   waypointList: document.querySelector("#waypointList"),
   mobileControlsButton: document.querySelector("#mobileControlsButton"),
   mobileClearRouteButton: document.querySelector("#mobileClearRouteButton"),
@@ -151,6 +153,11 @@ document.head.append(pinStyle);
 
 function setStatus(message) {
   els.status.textContent = message;
+}
+
+function setRouteLoading(isLoading, message = "Creating route...") {
+  els.routeLoadingMessage.textContent = message;
+  els.routeLoadingOverlay.hidden = !isLoading;
 }
 
 function formatMiles(meters) {
@@ -638,6 +645,7 @@ async function buildAutomaticRoute() {
   const selectedLabel = els.autoRouteDistance.options[els.autoRouteDistance.selectedIndex].text;
 
   els.autoBuildRouteButton.disabled = true;
+  setRouteLoading(true, `Creating ${selectedLabel} route...`);
   try {
     setStatus(`Creating a ${selectedLabel} route...`);
     const origin = await routeOrigin();
@@ -663,17 +671,20 @@ async function buildAutomaticRoute() {
     if (isMobileLayout()) closeRouteControls();
   } finally {
     els.autoBuildRouteButton.disabled = false;
+    setRouteLoading(false);
   }
 }
 
 async function handleBuildRouteClick() {
   state.isBuildingRoute = true;
+  setRouteLoading(true, "Creating route...");
   updateMetrics();
   try {
     const route = await buildRoute();
     if (route && isMobileLayout()) closeRouteControls();
   } finally {
     state.isBuildingRoute = false;
+    setRouteLoading(false);
     updateMetrics();
   }
 }
