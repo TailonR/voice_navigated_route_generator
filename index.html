@@ -149,6 +149,13 @@
       </aside>
     </main>
 
+    <div id="routeLoadingOverlay" class="route-loading-overlay" role="status" aria-live="polite" aria-busy="true" hidden>
+      <div class="route-loading-panel">
+        <div class="route-loading-spinner" aria-hidden="true"></div>
+        <strong id="routeLoadingMessage">Creating route...</strong>
+      </div>
+    </div>
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     ></script>
